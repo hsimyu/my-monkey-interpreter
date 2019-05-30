@@ -299,6 +299,23 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	}
 }
 
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"hello world";`
+
+	program := InitializeTest(t, input, 1)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	literal, ok := stmt.Expression.(*ast.StringLiteral)
+
+	if !ok {
+		t.Fatalf("exp is not *ast.StringLiteral. got = %T", stmt.Expression)
+	}
+
+	if literal.Value != "hello world" {
+		t.Errorf("literal.Value is not %q. got = %q", "hello world", literal.Value)
+	}
+}
+
 func TestBooleanExpression(t *testing.T) {
 	input := "true;"
 

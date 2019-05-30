@@ -14,6 +14,7 @@ const (
 	// 識別子 + リテラル
 	IDENT = "IDENT"
 	INT   = "INT"
+	STRING = "STRING"
 
 	// Operator
 	ASSIGN   = "="
