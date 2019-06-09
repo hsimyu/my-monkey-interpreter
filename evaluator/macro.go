@@ -7,6 +7,55 @@ import (
 	"monkey/token"
 )
 
+func DefineMacros(program *ast.Program, env *object.Environment) {
+	definitions := []int{}
+
+	// マクロ定義を探し、マクロ定義配列に追加
+	for i, statement := range program.Statements {
+		if isMacroDefinition(statement) {
+			addMacro(statement, env)
+			definitions = append(definitions, i)
+		}
+	}
+
+	// 発見できたマクロ定義を AST から取り除く
+	for i := len(definitions) - 1; i >= 0; i = i - 1 {
+		definitionIndex := definitions[i]
+		program.Statements = append(
+			program.Statements[:definitionIndex],
+			program.Statements[definitionIndex+1:]...,
+		)
+	}
+}
+
+func isMacroDefinition(statement ast.Statement) bool {
+	letStatement, ok := statement.(*ast.LetStatement)
+	if !ok {
+		return false
+	}
+
+	_, ok = letStatement.Value.(*ast.MacroLiteral)
+	if !ok {
+		return false
+	}
+
+	return true
+}
+
+func addMacro(statement ast.Statement, env *object.Environment) {
+	// この二つのキャストが成功することは isMacroDefinition() で事前確認されている
+	letStatement, _ := statement.(*ast.LetStatement)
+	macroLiteral, _ := letStatement.Value.(*ast.MacroLiteral)
+
+	macro := &object.Macro{
+		Parameters: macroLiteral.Parameters,
+		Env:        env,
+		Body:       macroLiteral.Body,
+	}
+
+	env.Set(letStatement.Name.Value, macro)
+}
+
 func quote(node ast.Node, env *object.Environment) object.Object {
 	node = evalUnquoteCalls(node, env)
 	return &object.Quote{Node: node}
