@@ -31,6 +31,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		// 現在の Env のコピーを関数オブジェクト内に閉じ込める
 		return &object.Function{Parameters: params, Env: env, Body: body}
 	case *ast.CallExpression:
+		if node.Function.TokenLiteral() == "quote" {
+			// quote は単一引数だけを受け取る
+			return quote(node.Arguments[0], env)
+		}
+
 		function := Eval(node.Function, env)
 		if isError(function) {
 			return function
